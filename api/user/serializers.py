@@ -30,7 +30,53 @@ class RegistrationSerializer(serializers.ModelSerializer):
       user.save()
       return user
 
+
+class UserSerializer(serializers.ModelSerializer):
+   class Meta:
+      model = User
+      fields = ['id', 'type', 'username', 'full_name', 'email', 'phone_number']
+
+
+class UserSimpleSerializer(serializers.ModelSerializer):
+   class Meta:
+      model = User
+      fields = ['id', 'username', 'full_name']
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+   class Meta:
+      model = User
+      fields = ['email', 'phone_number', 'description']
+
+
 class FavouriteTrainerSerializer(serializers.ModelSerializer):
+   client_username = serializers.SerializerMethodField('get_client_username')
+   trainer_username = serializers.SerializerMethodField('get_trainer_username')
+   client_full_name = serializers.SerializerMethodField('get_client_full_name')
+   trainer_full_name = serializers.SerializerMethodField('get_trainer_full_name')
+
    class Meta:
       model = FavouriteTrainer 
-      fields = ['id', 'client_id', 'trainer_id']
+      fields = ['id', 'client_id', 'client_username', 'client_full_name', 'trainer_id', 'trainer_username', 'trainer_full_name']
+
+   def save(self):
+      fav_trainer = FavouriteTrainer(
+         client_id = self.validated_data['client_id'],
+         trainer_id = self.validated_data['trainer_id'],
+      )
+      if fav_trainer.trainer_id.type != 'trainer':
+         raise serializers.ValidationError({'trainer_id': 'Followed user has to be a trainer.'})
+      fav_trainer.save()
+      return fav_trainer
+
+   def get_client_username(self, fav_trainer):
+      return fav_trainer.client_id.username
+   
+   def get_trainer_username(self, fav_trainer):
+      return fav_trainer.trainer_id.username
+
+   def get_client_full_name(self, fav_trainer):
+      return fav_trainer.client_id.full_name
+
+   def get_trainer_full_name(self, fav_trainer):
+      return fav_trainer.trainer_id.full_name

@@ -101,6 +101,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 class FavouriteTrainer(models.Model):
    class Meta:
       db_table = 'favourite_trainers'
+      unique_together = ['client_id', 'trainer_id']
 
    client_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_id')
    trainer_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='trainer_id')

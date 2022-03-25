@@ -12,7 +12,7 @@ class Workout(models.Model):
       upper_body = 'upper_body',
       condition = 'condition'
 
-   trainer_id = models.ForeignKey(User, on_delete=models.CASCADE)
+   trainer_id = models.ForeignKey(User, on_delete=models.CASCADE, db_column='trainer_id')
    type = models.CharField(max_length=10, choices=Type.choices) 
    name = models.CharField(max_length=100)
    exercises = models.CharField(max_length=100)

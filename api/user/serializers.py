@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
 from .models import User, FavouriteTrainer
 
 
@@ -27,7 +26,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
       if password != password_again:
          raise serializers.ValidationError({'password': 'Passwords must match.'})
-      user.password = make_password(password)
+      user.set_password(password)
       user.save()
       return user
 

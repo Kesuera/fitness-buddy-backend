@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.authtoken.models import Token
 from .serializers import RegistrationSerializer
 
 
@@ -14,7 +15,8 @@ def register_user(request):
          'username': user.username,
          'full_name': user.full_name,
          'email': user.email,
-         'phone_number': str(user.phone_number)
+         'phone_number': str(user.phone_number),
+         'token': Token.objects.get(user=user).key
       }
       return Response(data=data, status=status.HTTP_201_CREATED)
    else:

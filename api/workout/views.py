@@ -91,7 +91,7 @@ def get_workout_info(request, workout_id):
       return Response(status=status.HTTP_403_FORBIDDEN)
 
    serializer = WorkoutSerializer(workout)
-   return Response(serializer.data)
+   return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class WorkoutList(ListAPIView):
@@ -105,7 +105,7 @@ class WorkoutList(ListAPIView):
 
       queryset = self.get_queryset(user)
       serializer = WorkoutSimpleSerializer(queryset, many=True)
-      return Response(serializer.data)
+      return Response(serializer.data, status=status.HTTP_200_OK)
 
    def get_queryset(self, user):
       if user.type == 'trainer':

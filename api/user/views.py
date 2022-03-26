@@ -5,8 +5,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import ListAPIView
-from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import User, FavouriteTrainer
 from .serializers import *
 
@@ -16,6 +16,7 @@ def register_user(request):
    serializer = RegistrationSerializer(data=request.data)
    if serializer.is_valid():
       user = serializer.save()
+      data = UserSerializer(user).data
       data = {
          'id': user.id,
          'token': Token.objects.get(user=user).key
@@ -25,16 +26,31 @@ def register_user(request):
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class LoginAuthToken(ObtainAuthToken):
+   def post(self, request):
+      serializer = self.serializer_class(data=request.data, context={'request': request})
+      serializer.is_valid(raise_exception=True)
+      user = serializer.validated_data['user']
+      token, _ = Token.objects.get_or_create(user=user)
+      data = UserSerializer(user).data
+      data['token'] = token.key
+      return Response(data=data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated, ))
+def logout_user(request):
+   request.user.auth_token.delete()
+   return Response(status=status.HTTP_200_OK)
+
+
 @api_view(['PUT', ])
 @permission_classes((IsAuthenticated, ))
-def update_user(request, user_id):
+def update_user(request):
    try:
-      user = User.objects.get(id=user_id)
+      user = User.objects.get(id=request.user.id)
    except User.DoesNotExist:
       return Response(status=status.HTTP_404_NOT_FOUND)
-
-   if user != request.user:
-      return Response(status=status.HTTP_403_FORBIDDEN)
 
    serializer = UserUpdateSerializer(user, data=request.data)
    if serializer.is_valid():
@@ -76,7 +92,7 @@ class TrainerList(ListAPIView):
 
       queryset = self.get_queryset(trainer_name)
       serializer = UserSimpleSerializer(queryset, many=True)
-      return Response(serializer.data)
+      return Response(serializer.data, status=status.HTTP_200_OK)
 
    def get_queryset(self, trainer_name):
       if trainer_name:
@@ -141,7 +157,7 @@ class FavouriteTrainerList(ListAPIView):
 
       queryset = self.get_queryset(user)
       serializer = FavouriteTrainerSerializer(queryset, many=True)
-      return Response(serializer.data)
+      return Response(serializer.data, status=status.HTTP_200_OK)
 
    def get_queryset(self, user):
       if user.type == 'client':

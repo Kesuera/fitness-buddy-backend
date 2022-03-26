@@ -18,4 +18,4 @@ class WorkoutSerializer(serializers.ModelSerializer):
 class WorkoutSimpleSerializer(serializers.ModelSerializer):
    class Meta:
       model = Workout
-      fields = ['trainer_id', 'type', 'name']
+      fields = ['id', 'trainer_id', 'type', 'name']

@@ -19,11 +19,19 @@ def create_workout(request):
    workout = Workout(trainer_id=user)
    serializer = WorkoutSerializer(workout, data=request.data)
    if serializer.is_valid():
+<<<<<<< HEAD
       workout = serializer.save()
       data = {
          'id': workout.id,
       }
       return Response(data=data, status=status.HTTP_201_CREATED)
+=======
+         workout = serializer.save()
+         data = {
+            'id': workout.id,
+         }
+         return Response(data=data, status=status.HTTP_201_CREATED)
+>>>>>>> 52cf2c4146bd2531ef855c32d417f15ae800c11e
    else:
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -45,8 +53,13 @@ def update_workout(request, workout_id):
 
    serializer = WorkoutSerializer(workout, data=request.data)
    if serializer.is_valid():
+<<<<<<< HEAD
       serializer.save()
       return Response(status=status.HTTP_200_OK)
+=======
+         serializer.save()
+         return Response(status=status.HTTP_200_OK)
+>>>>>>> 52cf2c4146bd2531ef855c32d417f15ae800c11e
    else:
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -91,7 +104,9 @@ def get_workout_info(request, workout_id):
 class WorkoutList(ListAPIView):
    authentication_classes = (TokenAuthentication, )
    permission_classes = (IsAuthenticated, )
+   # search_fields = ['type','name']
 
+<<<<<<< HEAD
    def get(self, request, user_id):
       try:
          user = User.objects.get(id=user_id)
@@ -102,6 +117,10 @@ class WorkoutList(ListAPIView):
          pass
       elif (request.user.type == 'trainer' and user.type == 'trainer') or user.type == 'client':
          return Response(status=status.HTTP_403_FORBIDDEN)
+=======
+   def get(self, request):
+      user = request.user
+>>>>>>> 52cf2c4146bd2531ef855c32d417f15ae800c11e
 
       queryset = self.get_queryset(user)
       serializer = WorkoutSimpleSerializer(queryset, many=True)

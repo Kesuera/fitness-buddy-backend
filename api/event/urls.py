@@ -8,4 +8,5 @@ urlpatterns = [
    path('event/delete/<int:event_id>', delete_event),
    path('event/<int:event_id>', get_event_info),
    path('event/user/<int:user_id>', get_events),
+   path('event/user', EventList.as_view()),
 ]

@@ -5,6 +5,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView
 from .models import Event
+from api.user.models import User
 from .serializers import EventSerializer, EventSimpleSerializer
 
 
@@ -83,19 +84,21 @@ def get_event_info(request, event_id):
    serializer = EventSerializer(event)
    return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET', ])
-def get_events(request, user_id):
-
-   return Response('Hello World')
 
 class EventList(ListAPIView):
       authentication_classes = (TokenAuthentication, )
       permission_classes = (IsAuthenticated, )
 
+      def get(self, request, user_id):
+         try:
+            user = User.objects.get(id=user_id)
+         except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-
-      def get(self, request):
-         user = request.user
+         if (user == request.user):
+            pass
+         elif (request.user.type == 'trainer' and user.type == 'trainer') or user.type == 'client':
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
          queryset = self.get_queryset(user)
          serializer = EventSimpleSerializer(queryset, many=True)

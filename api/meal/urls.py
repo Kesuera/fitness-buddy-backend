@@ -7,5 +7,6 @@ urlpatterns = [
    path('meal/update/<int:meal_id>', update_meal),
    path('meal/delete/<int:meal_id>', delete_meal),
    path('meal/<int:meal_id>', get_meal_info),
-   path('meal/user/<int:user_id>', get_meals),
+
+   path('meal/user', MealList.as_view()),
 ]

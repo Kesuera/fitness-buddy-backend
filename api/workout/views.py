@@ -19,9 +19,6 @@ def create_workout(request):
    workout = Workout(trainer_id=user)
    serializer = WorkoutSerializer(workout, data=request.data)
    if serializer.is_valid():
-      if serializer.validated_data['trainer_id'] != user:
-         return Response(status=status.HTTP_403_FORBIDDEN)
-      else:
          workout = serializer.save()
          data = {
             'id': workout.id,
@@ -48,9 +45,6 @@ def update_workout(request, workout_id):
 
    serializer = WorkoutSerializer(workout, data=request.data)
    if serializer.is_valid():
-      if serializer.validated_data['trainer_id'] != user:
-         return Response(status=status.HTTP_403_FORBIDDEN)
-      else:
          serializer.save()
          return Response(status=status.HTTP_200_OK)
    else:
@@ -97,11 +91,10 @@ def get_workout_info(request, workout_id):
 class WorkoutList(ListAPIView):
    authentication_classes = (TokenAuthentication, )
    permission_classes = (IsAuthenticated, )
+   # search_fields = ['type','name']
 
-   def get(self, request, user_id):
+   def get(self, request):
       user = request.user
-      if user_id != user.id:
-         return Response(status=status.HTTP_403_FORBIDDEN)
 
       queryset = self.get_queryset(user)
       serializer = WorkoutSimpleSerializer(queryset, many=True)

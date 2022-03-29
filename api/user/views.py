@@ -37,21 +37,20 @@ class LoginAuthToken(ObtainAuthToken):
       return Response(data=data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET', ])
+@api_view(['DELETE', ])
 @permission_classes((IsAuthenticated, ))
 def logout_user(request):
-   request.user.auth_token.delete()
-   return Response(status=status.HTTP_200_OK)
+   operation = request.user.auth_token.delete()
+   if operation:
+      return Response(status=status.HTTP_200_OK)
+   else:
+      return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['PUT', ])
 @permission_classes((IsAuthenticated, ))
 def update_user(request):
-   try:
-      user = User.objects.get(id=request.user.id)
-   except User.DoesNotExist:
-      return Response(status=status.HTTP_404_NOT_FOUND)
-
+   user = request.user
    serializer = UserUpdateSerializer(user, data=request.data)
    if serializer.is_valid():
       serializer.save()
@@ -81,6 +80,7 @@ def get_user_info(request, user_id):
    serializer = UserSerializer(user)
    return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TrainerList(ListAPIView):
    authentication_classes = (TokenAuthentication, )
    permission_classes = (IsAuthenticated, )
@@ -96,48 +96,47 @@ class TrainerList(ListAPIView):
 
    def get_queryset(self, trainer_name):
       if trainer_name:
-         return User.objects.filter(Q(type='trainer') & (Q(username__icontains=trainer_name) | Q(full_name__icontains=trainer_name)))
+         return User.objects.filter(Q(type='trainer') & (Q(username__icontains=trainer_name) | Q(full_name__icontains=trainer_name))).order_by('full_name')
       else:
-         return User.objects.filter(type='trainer')
+         return User.objects.filter(type='trainer').order_by('full_name')
 
 
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated, ))
-def follow_trainer(request):
+def follow_trainer(request, trainer_id):
    user =  request.user
    if user.type != 'client':
       return Response(status=status.HTTP_403_FORBIDDEN)
 
-   fav_trainer = FavouriteTrainer()
-   serializer = FavouriteTrainerSerializer(fav_trainer, data=request.data)
+   try:
+      trainer = User.objects.get(id=trainer_id, type='trainer')
+   except User.DoesNotExist:
+      return Response(status=status.HTTP_404_NOT_FOUND)
 
+   data = {
+      'client_id': user.id,
+      'trainer_id': trainer.id,
+   }
+   fav_trainer = FavouriteTrainer()
+   serializer = FavouriteTrainerSerializer(fav_trainer, data=data)
    if serializer.is_valid():
-      if serializer.validated_data['client_id'] != user:
-         return Response(status=status.HTTP_403_FORBIDDEN)
-      else:
-         fav_trainer = serializer.save()
-         data = {
-            'id': fav_trainer.id,
-         }
-         return Response(data=data, status=status.HTTP_200_OK)
+      fav_trainer = serializer.save()
+      return Response(status=status.HTTP_200_OK)
    else:
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE', ])
 @permission_classes((IsAuthenticated, ))
-def unfollow_trainer(request, record_id):
+def unfollow_trainer(request, trainer_id):
    user = request.user
    if user.type != 'client':
       return Response(status=status.HTTP_403_FORBIDDEN)
 
    try:
-      fav_trainer = FavouriteTrainer.objects.get(id=record_id)
+      fav_trainer = FavouriteTrainer.objects.get(client_id=user.id, trainer_id=trainer_id)
    except FavouriteTrainer.DoesNotExist:
       return Response(status=status.HTTP_404_NOT_FOUND)
-
-   if fav_trainer.client_id != user:
-      return Response(status=status.HTTP_403_FORBIDDEN)
 
    operation = fav_trainer.delete()
    if operation:
@@ -150,13 +149,15 @@ class FavouriteTrainerList(ListAPIView):
    authentication_classes = (TokenAuthentication, )
    permission_classes = (IsAuthenticated, )
 
-   def get(self, request, user_id):
+   def get(self, request):
       user = request.user
-      if user_id != user.id:
-         return Response(status=status.HTTP_403_FORBIDDEN)
-
       queryset = self.get_queryset(user)
-      serializer = FavouriteTrainerSerializer(queryset, many=True)
+
+      if user.type == 'client':
+         serializer = FavouriteTrainerInfoSerializer(queryset, many=True)
+      else:
+         serializer = FollowerInfoSerializer(queryset, many=True)
+      
       return Response(serializer.data, status=status.HTTP_200_OK)
 
    def get_queryset(self, user):

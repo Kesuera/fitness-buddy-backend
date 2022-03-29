@@ -10,7 +10,7 @@ urlpatterns = [
    path('user/<int:user_id>', get_user_info),
    path('user/trainer', TrainerList.as_view()),
    path('user/trainer/<str:trainer_name>', TrainerList.as_view()),
-   path('user/fav_trainer/follow', follow_trainer),
-   path('user/fav_trainer/unfollow/<int:record_id>', unfollow_trainer),
-   path('user/fav_trainer/<int:user_id>', FavouriteTrainerList.as_view()),
+   path('user/favourites/follow/<int:trainer_id>', follow_trainer),
+   path('user/favourites/unfollow/<int:trainer_id>', unfollow_trainer),
+   path('user/favourites', FavouriteTrainerList.as_view()),
 ]

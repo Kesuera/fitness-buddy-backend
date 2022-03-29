@@ -7,7 +7,7 @@ class WorkoutSerializer(serializers.ModelSerializer):
 
    class Meta:
       model = Workout 
-      fields = ['id', 'trainer_id', 'trainer_username', 'trainer_full_name', 'type', 'name', 'exercises', 'duration', 'description']
+      fields = ['id', 'trainer_username', 'trainer_full_name', 'type', 'name', 'exercises', 'duration', 'description']
 
    def get_username(self, workout):
       return workout.trainer_id.username
@@ -18,4 +18,5 @@ class WorkoutSerializer(serializers.ModelSerializer):
 class WorkoutSimpleSerializer(serializers.ModelSerializer):
    class Meta:
       model = Workout
-      fields = ['id', 'trainer_id', 'type', 'name']
+      fields = ['id', 'type', 'name']
+

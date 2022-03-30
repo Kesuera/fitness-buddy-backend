@@ -19,4 +19,16 @@ class MealSerializer(serializers.ModelSerializer):
 class MealSimpleSerializer(serializers.ModelSerializer):
    class Meta:
       model = Meal
-      fields = ['id','trainer_id','type','name']
+      fields = ['id','type','name']
+
+# class ImageSerializer(serializers.ModelSerializer):
+
+#    class Meta:
+#    model = Image
+#    fields = ['img_id','image',]
+
+#    def get_image_url(self, obj):
+#       return obj.image.url
+
+
+

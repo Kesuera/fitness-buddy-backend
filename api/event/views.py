@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView
 from .models import Event
 from api.user.models import User
 from .serializers import EventSerializer, EventSimpleSerializer
+from api.user.models import FavouriteTrainer
 
 
 @api_view(['POST', ])
@@ -46,7 +47,7 @@ def update_event(request, event_id):
    serializer = EventSerializer(event, data=request.data)
    if serializer.is_valid():
       serializer.save()
-      return Response(status=status.HTTP_200_OK)
+      return Response(serializer.data, status=status.HTTP_200_OK)
    else:
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -106,6 +107,7 @@ class EventList(ListAPIView):
 
       def get_queryset(self, user):
          if user.type == 'trainer':
-            return Event.objects.filter(trainer_id=user).order_by('date')
-         elif user.type == 'client':
-            return Event.objects.filter()
+            return Event.objects.filter(trainer_id=user).order_by('name')
+         else:
+            trainers = FavouriteTrainer.objects.filter(client_id=user).values_list('trainer_id')
+            return Event.objects.filter(trainer_id__in=trainers).order_by('name')

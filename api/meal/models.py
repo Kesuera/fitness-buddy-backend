@@ -2,8 +2,8 @@ from django.db import models
 from api.user.models import User
 
 def upload_location(instance, filename, **kwargs):
-   file_path = 'meal/{trainer_id}/{filename}'.format(
-      trainer_id=str(instance.trainer_id), filename=filename
+   file_path = 'meal_photos/{filename}'.format(
+      filename=filename
    )
    return file_path
 

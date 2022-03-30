@@ -7,6 +7,8 @@ from rest_framework.generics import ListAPIView
 from .models import Meal
 from api.user.models import User
 from .serializers import MealSerializer, MealSimpleSerializer
+from api.user.models import FavouriteTrainer
+from django.http import FileResponse
 
 
 @api_view(['POST', ])
@@ -74,6 +76,7 @@ def delete_meal(request, meal_id):
 
 
 @api_view(['GET', ])
+@permission_classes((IsAuthenticated, ))
 def get_meal_info(request, meal_id):
     try:
         meal = Meal.objects.get(id=meal_id)
@@ -86,6 +89,18 @@ def get_meal_info(request, meal_id):
     serializer = MealSerializer(meal)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+#@api_view(['GET', ])
+#@permission_classes((IsAuthenticated, ))
+#def imageGet(instance, request, name):
+#    location = '/meal_photos/{trainer_id}/'+name.format(trainer_id=str(instance.trainer_id),filename=name)
+#    print(location)
+#    try:
+#        img = open(location, 'rb')
+#        resp = FileResponse(img)
+#        resp.status_code = 200
+#        return resp
+#    except IOError:
+#        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class MealList(ListAPIView):
     authentication_classes = (TokenAuthentication, )
@@ -109,3 +124,6 @@ class MealList(ListAPIView):
     def get_queryset(self, user):
         if user.type == 'trainer':
             return Meal.objects.filter(trainer_id=user).order_by('name')
+        else:
+            trainers = FavouriteTrainer.objects.filter(client_id=user).values_list('trainer_id')
+            return Meal.objects.filter(trainer_id__in=trainers).order_by('name')

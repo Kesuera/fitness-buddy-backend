@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView
 from .models import Workout
 from api.user.models import User
 from .serializers import *
+from api.user.models import FavouriteTrainer
 
 
 @api_view(['POST', ])
@@ -110,4 +111,6 @@ class WorkoutList(ListAPIView):
    def get_queryset(self, user):
       if user.type == 'trainer':
          return Workout.objects.filter(trainer_id=user).order_by('name')
-      # TODO list workoutov klienta vsetkych jeho favourite trainers
+      else:
+         trainers = FavouriteTrainer.objects.filter(client_id=user).values_list('trainer_id')
+         return Workout.objects.filter(trainer_id__in=trainers).order_by('name')

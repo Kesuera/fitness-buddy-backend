@@ -19,4 +19,4 @@ class EventSerializer(serializers.ModelSerializer):
 class EventSimpleSerializer(serializers.ModelSerializer):
    class Meta:
       model = Event
-      fields = ['id', 'trainer_id', 'name']
+      fields = ['id', 'name']

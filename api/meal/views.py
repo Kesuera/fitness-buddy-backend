@@ -8,7 +8,7 @@ from .models import Meal
 from api.user.models import User
 from .serializers import MealSerializer, MealSimpleSerializer
 from api.user.models import FavouriteTrainer
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 
 
 @api_view(['POST', ])
@@ -89,18 +89,30 @@ def get_meal_info(request, meal_id):
     serializer = MealSerializer(meal)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-#@api_view(['GET', ])
-#@permission_classes((IsAuthenticated, ))
-#def imageGet(instance, request, name):
-#    location = '/meal_photos/{trainer_id}/'+name.format(trainer_id=str(instance.trainer_id),filename=name)
-#    print(location)
-#    try:
-#        img = open(location, 'rb')
-#        resp = FileResponse(img)
-#        resp.status_code = 200
-#        return resp
-#    except IOError:
-#        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated, ))
+def get_image(request, photo_name):
+    if request.user.type == 'trainer':
+        try:
+            meal = Meal.objects.get(photo_path=photo_name)
+        except Meal.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        if meal.trainer_id != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+    location = 'meal_photos/' + photo_name
+    try:
+        img = open(location, 'rb')
+        response = FileResponse(img)
+        response.status_code = 200
+        return response
+    except IOError:
+        response = HttpResponse()
+        response.status_code = 404
+        return response
+
 
 class MealList(ListAPIView):
     authentication_classes = (TokenAuthentication, )

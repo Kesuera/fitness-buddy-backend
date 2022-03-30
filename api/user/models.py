@@ -103,5 +103,5 @@ class FavouriteTrainer(models.Model):
       db_table = 'favourite_trainers'
       unique_together = ['client_id', 'trainer_id']
 
-   client_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_id')
-   trainer_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='trainer_id')
+   client_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_id', db_column='client_id')
+   trainer_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='trainer_id', db_column='trainer_id')

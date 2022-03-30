@@ -6,7 +6,7 @@ class Event(models.Model):
    class Meta:
       db_table = 'events'
 
-   trainer_id = models.ForeignKey(User, on_delete=models.CASCADE)
+   trainer_id = models.ForeignKey(User, on_delete=models.CASCADE, db_column='trainer_id')
    name = models.CharField(max_length=100)
    place = models.CharField(max_length=100)
    date = models.DateTimeField()

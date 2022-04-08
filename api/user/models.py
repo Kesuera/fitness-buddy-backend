@@ -64,7 +64,7 @@ class User(AbstractBaseUser):
    email = models.EmailField(unique=True)
    phone_number = PhoneNumberField(unique=True)
    password = models.CharField(max_length=256)
-   description = models.CharField(max_length=500, null=True)
+   description = models.CharField(max_length=500, default='')
 
    # required AbstractBaseUser fields
    date_joined = models.DateTimeField(auto_now_add=True)

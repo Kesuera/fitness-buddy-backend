@@ -17,10 +17,7 @@ def register_user(request):
    if serializer.is_valid():
       user = serializer.save()
       data = UserSerializer(user).data
-      data = {
-         'id': user.id,
-         'token': Token.objects.get(user=user).key
-      }
+      data ['token'] = Token.objects.get(user=user).key
       return Response(data=data, status=status.HTTP_201_CREATED)
    else:
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

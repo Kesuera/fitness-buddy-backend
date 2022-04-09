@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+import re
 
 class UserManager(BaseUserManager):
    def create_user(self, type, username, full_name, email, phone_number, password):
@@ -23,10 +24,10 @@ class UserManager(BaseUserManager):
 
       user = self.model(
          type=type, 
-         username=username, 
-         full_name=full_name,
+         username=re.sub("\s+", '', username), 
+         full_name=re.sub(' +', ' ', full_name).strip().title(),
          email=self.normalize_email(email),
-         phone_number=phone_number
+         phone_number=re.sub("\s+", '', phone_number)
       )
       
       user.set_password(password)

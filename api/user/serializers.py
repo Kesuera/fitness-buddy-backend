@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from django.contrib.auth.models import BaseUserManager
 from .models import User, FavouriteTrainer
-
+import re
 
 class RegistrationSerializer(serializers.ModelSerializer):
    password_again = serializers.CharField(style={'input_type': 'password'}, max_length=200, write_only=True)
@@ -24,8 +25,24 @@ class RegistrationSerializer(serializers.ModelSerializer):
       password = self.validated_data['password']
       password_again = self.validated_data['password_again']
 
+      if not user.username.isalnum():
+         raise serializers.ValidationError({'username': 'Username can only contains letters and numbers without white spaces.'})
+
+      if len(user.username) < 4:
+         raise serializers.ValidationError({'username': 'Username must be atleast 4 characters long.'})
+
+      if not all(x.isalpha() or x.isspace() for x in user.full_name):
+         raise serializers.ValidationError({'full_name': 'Full name can only contain letters.'})
+
+      if len(user.full_name) < 4:
+         raise serializers.ValidationError({'full_name': 'Full name must be atleast 4 characters long.'})
+
+      if len(password) < 6:
+         raise serializers.ValidationError({'password': 'Password must be atleast 6 characters long.'})
+
       if password != password_again:
          raise serializers.ValidationError({'password': 'Passwords must match.'})
+
       user.set_password(password)
       user.save()
       return user
@@ -47,6 +64,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
    class Meta:
       model = User
       fields = ['email', 'phone_number', 'description']
+
+   def save(self, user):
+      user.email = BaseUserManager.normalize_email(self.validated_data['email'])
+      user.phone_number = self.validated_data['phone_number']
+      description =  re.sub(' +', ' ', self.validated_data['description']).strip()
+      if (len(description) < 10 or len(description) > 500):
+         raise serializers.ValidationError({'description': 'Description must be 10-500 characters long.'})
+      user.description = description
+      user.save()
+      return user
 
 
 class FavouriteTrainerSerializer(serializers.ModelSerializer):

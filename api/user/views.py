@@ -88,7 +88,7 @@ class TrainerList(ListAPIView):
          return Response(status=status.HTTP_403_FORBIDDEN)
 
       queryset = self.get_queryset(trainer_name)
-      serializer = UserSimpleSerializer(queryset, many=True)
+      serializer = UserSimpleSerializer(queryset, many=True, context={'client_id': user.id})
       return Response(serializer.data, status=status.HTTP_200_OK)
 
    def get_queryset(self, trainer_name):
@@ -152,10 +152,12 @@ class FavouriteTrainerList(ListAPIView):
 
       if user.type == 'client':
          serializer = FavouriteTrainerInfoSerializer(queryset, many=True)
+         data = sorted(serializer.data, key=lambda k: k['trainer_full_name'])
       else:
          serializer = FollowerInfoSerializer(queryset, many=True)
+         data = sorted(serializer.data, key=lambda k: k['client_full_name'])
       
-      return Response(serializer.data, status=status.HTTP_200_OK)
+      return Response(data, status=status.HTTP_200_OK)
 
    def get_queryset(self, user):
       if user.type == 'client':

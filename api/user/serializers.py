@@ -55,10 +55,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserSimpleSerializer(serializers.ModelSerializer):
+   is_fav = serializers.SerializerMethodField('get_is_fav')
+   
    class Meta:
       model = User
-      fields = ['id', 'username', 'full_name']
+      fields = ['id', 'username', 'full_name', 'is_fav']
 
+   def get_is_fav(self, trainer):
+      client_id = self.context.get('client_id')
+      try:
+         FavouriteTrainer.objects.get(client_id=client_id, trainer_id=trainer.id)
+         return True
+      except FavouriteTrainer.DoesNotExist:
+         return False
 
 class UserUpdateSerializer(serializers.ModelSerializer):
    class Meta:

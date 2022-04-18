@@ -17,16 +17,19 @@ def create_meal(request):
 
     user = request.user
     if user.type != 'trainer':
-        return Response(status =status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     meal = Meal(trainer_id=user)
     serializer = MealSerializer(meal, data=request.data)
     if serializer.is_valid():
         meal = serializer.save()
+        meal = Meal.objects.get(id=meal.id)
+        serializer = MealSerializer(meal)
         data = {
-            'id': meal.id
+            'id': meal.id,
+            'photo_path': serializer.data['photo_path'],
         }
-        return Response(data =data, status =status.HTTP_201_CREATED)
+        return Response(data=data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -45,10 +48,16 @@ def update_meal(request, meal_id):
     if meal.trainer_id != user:
         return Response(status=status.HTTP_403_FORBIDDEN)
 
-    serializer = MealSerializer(meal, data =request.data)
+    serializer = MealSerializer(meal, data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
+        meal = serializer.save()
+        meal = Meal.objects.get(id=meal.id)
+        serializer = MealSerializer(meal)
+        data = {
+            'photo_path': serializer.data['photo_path'],
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
